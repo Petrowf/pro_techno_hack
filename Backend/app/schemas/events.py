@@ -14,7 +14,7 @@ class AbortCreate(BaseModel):
     comment: str | None = None
     start_time: datetime
     end_time: datetime | None = None
-    
+
 class EventUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
@@ -22,15 +22,17 @@ class EventUpdate(BaseModel):
     address: Optional[str] = None
     is_active: Optional[bool] = None
 
-class EventResponse(EventBase):
+class EventResponse(BaseModel):
     id: int
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-    
-    class Config:
-        from_attributes = True
+    type: str
+    reason: str
+    start_time: datetime
+    end_time: datetime
 
+    class Config:
+        orm_mode = True
+
+        
 class SubscriptionCreate(BaseModel):
     address: str
 

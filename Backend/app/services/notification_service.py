@@ -1,35 +1,30 @@
-import asyncpg
-from firebase_admin import messaging
-from app.core.config import settings
-from app.database.session import get_db
+from pyfcm import FCMNotification
+import logging
+
+logger = logging.getLogger(__name__)
 
 class NotificationService:
-    async def send_to_matching_users(self, abort_id: int):
-        async with get_db() as db:
-            # Находим пользователей с совпадающими адресами
-            query = """
-                SELECT DISTINCT u.fcm_token 
-                FROM users_addresses ua
-                JOIN aborts_addresses aa ON ua.address_id = aa.address_id
-                JOIN users u ON ua.user_id = u.id
-                WHERE aa.abort_id = $1
-                AND u.fcm_token IS NOT NULL
-            """
-            result = await db.execute(query, abort_id)
-            users = result.scalars().all()
+    def __init__(self, project_id: str, service_account_file: str = None):
+        # Инициализация FCM с project_id и путем к файлу учетных данных сервисного аккаунта
+        self.push_service = FCMNotification(project_id=project_id, service_account_file=service_account_file)
 
-            # Отправляем уведомления
-            for token in users:
-                message = messaging.Message(
-                    notification=messaging.Notification(
-                        title="Новое событие",
-                        body="В вашем районе добавлено новое событие"
-                    ),
-                    token=token
-                )
-                try:
-                    messaging.send(message)
-                except Exception as e:
-                    print(f"Ошибка отправки: {str(e)}")
+    async def send_notification(
+        self,
+        fcm_tokens: list[str],
+        title: str,
+        message: str,
+        data: dict = None
+    ) -> None:
+        if not fcm_tokens:
+            return
 
-notification_service = NotificationService()
+        try:
+            response = self.push_service.notify(
+                fcm_token=fcm_tokens,
+                notification_title=title,
+                notification_body=message,
+                data_message=data
+            )
+            logger.info(f"FCM Response: {response}")
+        except Exception as e:
+            logger.error(f"FCM Error: {str(e)}")

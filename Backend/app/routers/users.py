@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from requests import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
@@ -17,16 +18,34 @@ async def read_current_user(
     """Получить данные текущего аутентифицированного пользователя"""
     return current_user
 
+# routers/users.py
+@router.put("/me/fcm_token")
+async def update_fcm_token(
+    token: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    current_user.fcm_token = token
+    db.commit()
+    return {"status": "ok"}
+
 @router.patch("/me", response_model=UserResponse)
 async def update_current_user(
     user_data: UserUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    """Обновить данные текущего пользователя"""
-    updated_user = await UserService(db).update_user(current_user.id, user_data)
-    return updated_user
-
+    """Обновить данные пользователя, включая адреса"""
+    try:
+        updated_user = await UserService(db).update_user(current_user.id, user_data)
+        return updated_user
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_current_user(
     db: AsyncSession = Depends(get_db),

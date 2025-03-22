@@ -1,6 +1,8 @@
+from requests import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.models.users import User
+from app.models.users import User, UserAddress
+from app.models.aborts import Address
 from app.schemas.auth import UserUpdate
 from app.core.security import get_password_hash, verify_password
 
@@ -34,26 +36,36 @@ class UserService:
         return new_user
 
     async def update_user(self, user_id: int, user_data: UserUpdate) -> User:
-        result = await self.db.execute(select(User).where(User.id == user_id))
-        user = result.scalars().first()
+        # Обновляем основные данные пользователя
+        user = await self.db.get(User, user_id)
         if not user:
             raise ValueError("User not found")
 
-        # Проверка уникальности при изменении логина
-        if user_data.login:
-            existing = await self.db.execute(
-                select(User).where(User.login == user_data.login))
-            if existing.scalars().first():
-                raise ValueError("Login already taken")
+        for key, value in user_data.dict(exclude={"address_ids"}).items():
+            if value is not None:
+                setattr(user, key, value)
 
-        update_data = user_data.dict(exclude_unset=True)
-        
-        if "password" in update_data:
-            update_data["hased_password"] = get_password_hash(update_data.pop("password"))
-        
-        for key, value in update_data.items():
-            setattr(user, key, value)
-        
+        # Обновляем адреса, если они переданы
+        if user_data.address_ids is not None:
+            # Удаляем старые связи
+            await self.db.execute(
+                delete(UserAddress)
+                .where(UserAddress.user_id == user_id)
+            )
+            
+            # Добавляем новые адреса
+            for address_id in user_data.address_ids:
+                # Проверяем существование адреса
+                address = await self.db.get(Address, address_id)
+                if not address:
+                    raise ValueError(f"Address {address_id} not found")
+                
+                self.db.add(UserAddress(
+                    user_id=user_id,
+                    address_id=address_id,
+                    name=f"Address {address_id}"  # Пример, можно настроить
+                ))
+
         await self.db.commit()
         await self.db.refresh(user)
         return user

@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, Dict, Any
+from typing import List, Optional, Dict, Any
 
 class Token(BaseModel):
     access_token: str
@@ -27,9 +27,10 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class UserUpdate(BaseModel):
-    username: Optional[str] = None
-    password: Optional[str] = None
+    name: Optional[str] = None
+    phone: Optional[str] = None
     fcm_token: Optional[str] = None
+    address_ids: Optional[List[int]] = None  # Новое поле
 
 class FCMTokenUpdate(BaseModel):
     fcm_token: str
