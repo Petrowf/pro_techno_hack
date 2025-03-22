@@ -1,13 +1,15 @@
 from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from app.database.base import Base
+from app.models.aborts import Address
+
 
 class User(Base):
     __tablename__ = "users"
     
     id = Column(Integer, primary_key=True, index=True)
     login = Column(String(50), unique=True, nullable=False)
-    username = Column(String(100))
+    name = Column(String(100))
     phone = Column(String(20))
     hashed_password = Column(String(255), nullable=False)
     fcm_token = Column(String(255))  # Добавляем поле для FCM токена

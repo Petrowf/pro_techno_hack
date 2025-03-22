@@ -16,7 +16,7 @@ class UserService:
             return None
         return user
 
-    async def create_user(self, login: str, password: str, username: str) -> User:
+    async def create_user(self, login: str, password: str, name: str) -> User:
         # Проверка уникальности логина
         existing_user = await self.db.execute(
             select(User).where(User.login == login))
@@ -26,7 +26,7 @@ class UserService:
         new_user = User(
             login=login,
             hashed_password=get_password_hash(password),
-            username=username
+            name=name
         )
         self.db.add(new_user)
         await self.db.commit()

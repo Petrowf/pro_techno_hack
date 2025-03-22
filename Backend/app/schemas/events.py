@@ -8,9 +8,13 @@ class EventBase(BaseModel):
     event_date: date
     address: str
 
-class EventCreate(EventBase):
-    pass
-
+class AbortCreate(BaseModel):
+    type: str
+    reason: str
+    comment: str | None = None
+    start_time: datetime
+    end_time: datetime | None = None
+    
 class EventUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None

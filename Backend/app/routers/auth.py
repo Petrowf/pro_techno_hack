@@ -38,7 +38,7 @@ async def register_user(
         user = await UserService(db).create_user(
             login=user_data.login,
             password=user_data.password,
-            username=user_data.username
+            name=user_data.username
         )
         return {"message": "User created successfully", "login": user.login}
     except ValueError as e:
