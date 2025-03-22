@@ -27,8 +27,13 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 class UserUpdate(BaseModel):
-    username: str
-    password: str
+    username: Optional[str] = None
+    password: Optional[str] = None
+    fcm_token: Optional[str] = None
+
+class FCMTokenUpdate(BaseModel):
+    fcm_token: str
+
 
 class LoginRequest(BaseModel):
     login: str
