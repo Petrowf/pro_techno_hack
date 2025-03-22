@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text, TIMESTAMP, ForeignKey
 from sqlalchemy.orm import relationship
+from sqlalchemy.ext.hybrid import hybrid_property
 from app.database.base import Base
 
 class Abort(Base):
@@ -11,9 +12,14 @@ class Abort(Base):
     comment = Column(Text)
     start_time = Column(TIMESTAMP(timezone=False))
     end_time = Column(TIMESTAMP(timezone=False))
-    
+    organization = Column(String(50))
+    phone_number = Column(String(20))
     # Отношения
     abort_addresses = relationship("AbortAddress", back_populates="abort")
+
+    @hybrid_property
+    def address_ids(self):
+        return [addr.address_id for addr in self.abort_addresses]
 
 class Address(Base):
     __tablename__ = "addresses"

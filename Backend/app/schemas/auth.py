@@ -6,7 +6,7 @@ class Token(BaseModel):
     token_type: str
 
 class TokenData(BaseModel):
-    username: str | None = None
+    name: str | None = None
 
 class UserAuth(BaseModel):
     login: str
@@ -15,10 +15,10 @@ class UserAuth(BaseModel):
 class UserCreate(BaseModel):
     login: str
     password: str
-    username: str
+    name: str
 
 class UserResponse(BaseModel):
-    username: str
+    name: str
     login: str
     phone: Optional[str] = None  # Разрешаем None
     addresses: Optional[Dict[str, Any]] = None  # Для JSON-объекта

@@ -4,7 +4,9 @@ from app.routers import auth, users, aborts
 from app.database import base, session
 from app.core.config import settings
 from app.services.scheduler import event_listener
-
+from firebase_admin import credentials, messaging
+import firebase_admin
+from app.core.config import settings
 app = FastAPI(
     title="Auth",
     version="0.1.0"  ,
@@ -39,7 +41,19 @@ app.include_router(auth.router, prefix=settings.API_V1_STR)
 app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(aborts.router, prefix=settings.API_V1_STR)
 
+cred = credentials.Certificate(settings.FCM_SERVICE_ACCOUNT)
 
+@app.post("/send-notification")
+async def send_notification(device_token: str, title: str, body: str):
+    message = messaging.Message(
+        notification=messaging.Notification(title=title, body=body),
+        token=device_token,
+    )
+    try:
+        response = messaging.send(message)
+        return {"status": "success", "message_id": response}
+    except Exception as e:
+        return {"status": "error", "detail": str(e)}
 
 @app.get("/health")
 async def health_check():

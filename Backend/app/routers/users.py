@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 from requests import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
@@ -21,7 +21,7 @@ async def read_current_user(
 # routers/users.py
 @router.put("/me/fcm_token")
 async def update_fcm_token(
-    token: str,
+    token: str = Body(..., embed=True), 
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
@@ -45,7 +45,7 @@ async def update_current_user(
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     
-    
+
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_current_user(
     db: AsyncSession = Depends(get_db),

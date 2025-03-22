@@ -1,8 +1,9 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
-from sqlalchemy import select
+from sqlalchemy.orm import selectinload
+from sqlalchemy import select, join
 from sqlalchemy.ext.asyncio import AsyncSession 
-from app.schemas.aborts import AbortCreateSchema, AbortResponseSchema
+from app.schemas.aborts import AbortResponseSchema, AddressSchema
 from app.models.users import User,UserAddress
 from app.models.aborts import Abort, AbortAddress, Address
 from app.database.session import get_db
@@ -10,78 +11,75 @@ from app.core.security import get_current_user
 from app.services.scheduler import NotificationService
 router = APIRouter()
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
-async def create_abort(
-    abort_data: AbortCreateSchema,
-    background_tasks: BackgroundTasks,
+
+@router.get("/user-events", response_model=List[AbortResponseSchema])
+async def get_user_aborts(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
     try:
-        new_abort = Abort(**abort_data.dict(exclude={"address_ids"}))
-        db.add(new_abort)
-        db.commit()
-
-        # Привязка адресов
-        for address_id in abort_data.address_ids:
-            if not db.query(Address).get(address_id):
-                db.rollback()
-                raise HTTPException(
-                    status_code=404,
-                    detail=f"Address {address_id} not found"
-                )
-            db.add(AbortAddress(
-                abort_id=new_abort.id,
-                address_id=address_id
-            ))
-        
-        db.commit()
-
-        # Фоновая задача для уведомлений
-        background_tasks.add_task(
-            send_abort_notifications,
-            db=db,
-            abort_id=new_abort.id
+        # Запрос с объединением таблиц и подгрузкой адресов
+        query = (
+            select(Abort)
+            .join(AbortAddress, Abort.id == AbortAddress.abort_id)
+            .join(UserAddress, AbortAddress.address_id == UserAddress.address_id)
+            .where(UserAddress.user_id == current_user.id)
+            .options(selectinload(Abort.abort_addresses))  # Подгрузка связанных адресов
         )
 
-        return {"id": new_abort.id}
+        result = await db.execute(query)
+        aborts = result.scalars().all()
 
-    except Exception as e:
-        db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        # Преобразуем данные в схему ответа
+        response = []
+        for abort in aborts:
+            abort_data = AbortResponseSchema(
+                id=abort.id,
+                type=abort.type,
+                reason=abort.reason,
+                comment=abort.comment,
+                start_time=abort.start_time.isoformat() if abort.start_time else None,
+                end_time=abort.end_time.isoformat() if abort.end_time else None,
+                address_ids=[addr.address_id for addr in abort.abort_addresses]
+            )
+            response.append(abort_data)
 
-
-@router.get("/user-events", response_model=List[AbortResponseSchema])
-async def get_user_aborts(
-    db: AsyncSession = Depends(get_db),  # Используем асинхронную сессию
-    current_user: User = Depends(get_current_user)
-):
-    try:
-        # Получаем все адреса пользователя
-        user_addresses = (await db.execute(
-            select(UserAddress.address_id)
-            .where(UserAddress.user_id == current_user.id)
-        )).scalars().all()
-
-        # Получаем ID связанных событий
-        abort_ids = (await db.execute(
-            select(AbortAddress.abort_id)
-            .where(AbortAddress.address_id.in_(user_addresses))
-        )).scalars().all()
-
-        # Получаем полные данные событий
-        aborts = (await db.execute(
-            select(Abort)
-            .where(Abort.id.in_(abort_ids))
-        )).scalars().all()
-
-        return aborts
+        return response
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+@router.get("/addresses/{address_id}", response_model=AddressSchema)
+async def get_address(
+    address_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    
+    # Используем функцию get_address_by_id для получения адреса
+    address = await get_address_by_id(address_id, db)
+    return address
+
+async def get_address_by_id(
+    address_id: int,
+    db: AsyncSession
+) -> Address:
+    
+    # Выполняем запрос к базе данных
+    result = await db.execute(select(Address).where(Address.id == address_id))
+    address = result.scalars().first()
+
+    # Если адрес не найден, выбрасываем исключение
+    if address is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Address with id {address_id} not found"
+        )
+
+    return address
+
 async def send_abort_notifications(db: AsyncSession, abort_id: int):
     notification_service = NotificationService()
     # ... (логика получения пользователей и отправки)

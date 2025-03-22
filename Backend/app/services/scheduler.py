@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 class EventWatcher:
     def __init__(self):
         self.notification_service = NotificationService(
-            project_id=settings.FCM_PROJECT_ID,
+            project_id=settings.FCM_API_KEY,
             service_account_file=settings.FCM_SERVICE_ACCOUNT
         )
         self._start_listener()
