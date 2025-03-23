@@ -18,44 +18,57 @@ async def get_user_aborts(
     current_user: User = Depends(get_current_user)
 ):
     try:
-        # Запрос с объединением таблиц и подгрузкой адресов
-        query = (
+        # 1. Получаем все адреса пользователя
+        user_address_query = select(UserAddress.address_id).where(
+            UserAddress.user_id == current_user.id
+        )
+        user_addresses = await db.execute(user_address_query)
+        address_ids = user_addresses.scalars().all()
+
+        if not address_ids:
+            return []
+
+        # 2. Ищем связанные события
+        abort_query = (
             select(Abort)
-            .join(AbortAddress, Abort.id == AbortAddress.abort_id)
-            .join(UserAddress, AbortAddress.address_id == UserAddress.address_id)
-            .where(UserAddress.user_id == current_user.id)
-            .options(selectinload(Abort.abort_addresses))  # Подгрузка связанных адресов
+            .join(Abort.abort_addresses)
+            .where(AbortAddress.address_id.in_(address_ids))
+            .options(
+                selectinload(Abort.abort_addresses)
+                .joinedload(AbortAddress.address)
+            )
+            .distinct(Abort.id)  # Уникальные события по ID
+            .order_by(Abort.id, Abort.start_time.desc())
         )
 
-        result = await db.execute(query)
+        result = await db.execute(abort_query)
         aborts = result.scalars().all()
 
-        # Преобразуем данные в схему ответа
-        response = []
-        for abort in aborts:
-            abort_data = AbortResponseSchema(
+        # 3. Формируем ответ
+        return [
+            AbortResponseSchema(
                 id=abort.id,
                 type=abort.type,
                 reason=abort.reason,
                 comment=abort.comment,
-                start_time=abort.start_time.isoformat() if abort.start_time else None,
-                end_time=abort.end_time.isoformat() if abort.end_time else None,
-                address_ids=[addr.address_id for addr in abort.abort_addresses]
+                start_time=abort.start_time,
+                end_time=abort.end_time,
+                address_ids=list({addr.address_id for addr in abort.abort_addresses})
             )
-            response.append(abort_data)
-
-        return response
+            for abort in aborts
+        ]
 
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=str(e)
+            detail=f"Ошибка при получении событий: {str(e)}"
         )
-
+    
 @router.get("/addresses/{address_id}", response_model=AddressSchema)
 async def get_address(
     address_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    
 ):
     
     # Используем функцию get_address_by_id для получения адреса

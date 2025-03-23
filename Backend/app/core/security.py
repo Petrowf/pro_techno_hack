@@ -6,8 +6,9 @@ from passlib.context import CryptContext
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.session import get_db
-from app.models.users import User
+from app.models.users import User, UserAddress
 from app.core.config import settings
+from sqlalchemy.orm import selectinload
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl=f"{settings.API_V1_STR}/auth/token")
@@ -41,10 +42,14 @@ async def get_current_user(
     except JWTError:
         raise credentials_exception
     
-    result = await db.execute(select(User).where(User.login == login))
+    # Модифицированный запрос с явной загрузкой отношений
+    result = await db.execute(
+        select(User)
+        .options(
+            selectinload(User.user_addresses)
+            .joinedload(UserAddress.address)  # Полная загрузка цепочки
+        )
+        .where(User.login == login)
+    )
     user = result.scalars().first()
-    
-    if not user:
-        raise credentials_exception
     return user
-

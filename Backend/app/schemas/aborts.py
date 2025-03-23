@@ -17,14 +17,26 @@ class AbortResponseSchema(BaseModel):
     type: str
     reason: str
     comment: str
-    start_time: str
-    end_time: str
-    address_ids: List[int]  # Список ID адресов, связанных с Abort
+    start_time: datetime
+    end_time: datetime
+    address_ids: List[int]
 
     class Config:
         from_attributes = True
 
 from pydantic import BaseModel
+
+class UserAddressUpdate(BaseModel):
+    name: Optional[str] = None
+    district: Optional[str] = None
+    street: Optional[str] = None
+    house: Optional[str] = None
+
+class UserAddressCreate(BaseModel):
+    name: str
+    district: str
+    street: str
+    house: str
 
 class AddressSchema(BaseModel):
     id: int

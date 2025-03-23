@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import Body, FastAPI
 from app.routers import auth, users, aborts
 from app.database import base, session
 from app.core.config import settings
@@ -42,9 +42,11 @@ app.include_router(users.router, prefix=settings.API_V1_STR)
 app.include_router(aborts.router, prefix=settings.API_V1_STR)
 
 cred = credentials.Certificate(settings.FCM_SERVICE_ACCOUNT)
-
+firebase_admin.initialize_app(cred)
 @app.post("/send-notification")
-async def send_notification(device_token: str, title: str, body: str):
+async def send_notification(device_token: str = Body(...),  # Используем Body для получения данных из JSON
+    title: str = Body(...),        # Используем Body для получения данных из JSON
+    body: str = Body(...)):
     message = messaging.Message(
         notification=messaging.Notification(title=title, body=body),
         token=device_token,

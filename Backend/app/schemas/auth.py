@@ -1,6 +1,8 @@
 from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
+from app.models.users import User
+
 class Token(BaseModel):
     access_token: str
     token_type: str
@@ -17,23 +19,55 @@ class UserCreate(BaseModel):
     password: str
     name: str
 
-class UserResponse(BaseModel):
-    name: str
-    login: str
-    phone: Optional[str] = None  # Разрешаем None
-    addresses: Optional[Dict[str, Any]] = None  # Для JSON-объекта
-    
+class AddressCreate(BaseModel):
+    district: str
+    street: str
+    house: str
+
+
+
+class AddressResponse(BaseModel):
+    id: int
+    district: str
+    street: str
+    house: str
+
     class Config:
         from_attributes = True
+
+        
+class UserAddressResponse(BaseModel):
+    id: int
+    name: str
+    address: AddressResponse  # Вложенный адрес
+
+    class Config:
+        from_attributes = True
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    phone: Optional[str]
+    user_addresses: list[UserAddressResponse]  # Используем новую схему
+
+    class Config:
+        from_attributes = True
+
+class UserAddressCreate(BaseModel):
+    name: str  # Название адреса (например "Дом" или "Офис")
+    district: str
+    street: str
+    house: str
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     phone: Optional[str] = None
     fcm_token: Optional[str] = None
-    address_ids: Optional[List[int]] = None  # Новое поле
+    user_addresses: Optional[List[UserAddressCreate]] = None  # Список адресов для добавления
 
 class FCMTokenUpdate(BaseModel):
     fcm_token: str
+
 
 
 class LoginRequest(BaseModel):
