@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E8F6F3"
+    tools:context=".EditProfileActivity">
+
+    <!-- Навигационная строка -->
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#A5D6A7"
+        android:paddingTop="14dp"
+        app:title="Редактирование профиля"
+        app:titleTextColor="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+        <!-- Кнопка "Назад" -->
+        <ImageView
+            android:id="@+id/backEditButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/arrow"
+            android:padding="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent" />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Форма редактирования -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="128dp"
+        android:orientation="vertical"
+        android:padding="26dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/toolbar">
+
+        <!-- Аватар -->
+        <ImageView
+            android:id="@+id/editAvatar"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginBottom="16dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/person" />
+
+        <!-- Имя пользователя -->
+        <EditText
+            android:id="@+id/editUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Имя пользователя"
+            android:textSize="18sp"
+            android:inputType="textPersonName"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Логин -->
+        <EditText
+            android:id="@+id/editLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Логин"
+            android:textSize="16sp"
+            android:inputType="text"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Телефон -->
+        <EditText
+            android:id="@+id/editPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Номер телефона"
+            android:textSize="16sp"
+            android:inputType="phone"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Адрес 1 -->
+        <EditText
+            android:id="@+id/editAddress1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Адрес 1"
+            android:textSize="16sp"
+            android:inputType="text"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Адрес 2 -->
+        <EditText
+            android:id="@+id/editAddress2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Адрес 2"
+            android:textSize="16sp"
+            android:inputType="text"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Адрес 3 -->
+        <EditText
+            android:id="@+id/editAddress3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Адрес 3"
+            android:textSize="16sp"
+            android:inputType="text"
+            android:padding="10dp"
+            android:background="@drawable/text_background"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Кнопка сохранения -->
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Сохранить"
+            android:backgroundTint="#A5D6A7"
+            android:textColor="#000000"
+            android:layout_marginTop="16dp" />
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

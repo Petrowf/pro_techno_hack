@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">MyKrasnoyarsk</string>
+    <string name="default_username">Имя пользователя</string>
+    <string name="default_login">Логин</string>
+    <string name="default_phone">Номер телефона</string>
+    <string name="default_address_prefix">Адрес</string>
+    <string name="default_address_1">Адрес 1</string>
+    <string name="default_address_2">Адрес 2</string>
+    <string name="default_address_3">Адрес 3</string>
+    <string name="profile_desc">Профиль</string>
+</resources>

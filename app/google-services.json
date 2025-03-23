@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "57660786006",
+    "project_id": "octopus-9f9f7",
+    "storage_bucket": "octopus-9f9f7.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:57660786006:android:456942577190ac41be42f7",
+        "android_client_info": {
+          "package_name": "com.example.octopus"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCT-Sr6SgmuDZpBojktlFT785qD9PVUY1g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
