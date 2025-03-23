@@ -1,15 +1,21 @@
 from fastapi import HTTPException
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.schemas.aborts import UserAddressUpdate
-from app.models.aborts import Address
-from app.models.users import User, UserAddress
-from app.schemas.auth import UserAddressCreate, UserUpdate
-from app.core.security import get_password_hash, verify_password
 from sqlalchemy.orm import selectinload
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import joinedload
-from app.core.security import get_current_user
+
+from app.models.aborts import Address
+from app.models.users import User, UserAddress
+
+from app.schemas.user import UserAddressUpdate, UserAddressCreate, UserUpdate
+
+
+from app.core.security import get_password_hash, verify_password
+
+
+
 
 class UserService:
     def __init__(self, db: AsyncSession):
