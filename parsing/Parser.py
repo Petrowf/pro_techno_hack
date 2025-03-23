@@ -181,8 +181,8 @@ class Parser:
             addresses, reason, comment, water_delivery = self.parse_addresses(area, address)
             start = self.df.loc[i, 'start']
             status, start_time, stop_time = self.parse_time(start)
-            query = "INSERT INTO aborts (type, reason, comment, water_delivery, start_time, end_time) VALUES (%s, %s, %s, %s, %s, %s)"
-            cur.execute(query, (resource_type, reason, comment, water_delivery, start_time, stop_time))
+            query = "INSERT INTO aborts (type, reason, organization, phone_number, comment, water_delivery, start_time, end_time) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
+            cur.execute(query, (resource_type, reason, resource_org, resource_phone, comment, water_delivery, start_time, stop_time))
             con.commit()
             query = "SELECT id FROM aborts ORDER BY id DESC fetch first 1 rows only"
             cur.execute(query)
