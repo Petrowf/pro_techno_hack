@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    ports:
+      - "8000:8000"  # Исправлено с 80 на 8000 (стандартный порт FastAPI)
+    env_file:
+      - .env  # Подключаем файл .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+      - FCM_SERVICE_ACCOUNT=/app/app/octopus-9f9f7-firebase-adminsdk-fbsvc-e33998ade7.json
+    depends_on:
+      - db
+    volumes:
+      - .:/app  # Монтируем текущую директорию, чтобы файлы сервисного аккаунта были доступны
+
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
